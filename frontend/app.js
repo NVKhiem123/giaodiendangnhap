@@ -19,12 +19,10 @@ function showToast(message, type = 'success') {
 
     document.body.appendChild(toast);
 
-    // Animate In
     setTimeout(() => {
         toast.classList.remove('translate-y-[-20px]', 'opacity-0');
     }, 50);
 
-    // Animate Out & Remove
     setTimeout(() => {
         toast.classList.add('translate-y-[-20px]', 'opacity-0');
         setTimeout(() => toast.remove(), 300);
@@ -32,11 +30,6 @@ function showToast(message, type = 'success') {
 }
 
 // Password Validation Rule Checker
-// Requirements:
-// 1. Min 8 characters
-// 2. At least 1 uppercase letter
-// 3. At least 1 lowercase letter
-// 4. At least 1 special character
 function validatePasswordRules(password) {
     if (!password || password.length < 8) {
         return { valid: false, message: "Password is too weak (tối thiểu 8 ký tự)" };
@@ -92,7 +85,10 @@ function setupCowCanvas() {
     canvas.height = window.innerHeight;
 
     const cowImg = new Image();
-    cowImg.src = 'cow.png'; 
+    cowImg.src = '../Design/cow.png'; 
+    cowImg.onerror = () => {
+        cowImg.src = 'cow.png';
+    };
 
     let mouse = { x: null, y: null, radius: 180 };
 

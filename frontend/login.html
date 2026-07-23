@@ -45,7 +45,7 @@
     <script src="firebase-config.js"></script>
     <script src="app.js"></script>
 </head>
-<body class="bg-[url('baico.jpg')] bg-cover bg-center bg-fixed min-h-screen flex flex-col font-sans text-gray-800 antialiased relative overflow-hidden">
+<body class="bg-[url('../Design/baico.jpg')] bg-cover bg-center bg-fixed min-h-screen flex flex-col font-sans text-gray-800 antialiased relative overflow-hidden">
 
     <!-- KHUNG CANVAS LÀM NỀN ĐỘNG -->
     <canvas id="cowCanvas" class="absolute inset-0 w-full h-full z-0 pointer-events-none"></canvas>
@@ -53,7 +53,7 @@
     <!-- Logo ở góc trái trên cùng -->
     <header class="absolute top-0 left-0 w-full p-6 md:p-10 z-20">
         <a href="index.html">
-            <img src="logo.png" alt="CowColap Logo" class="h-12 w-auto object-contain rounded-full shadow-sm border border-black/10 hover:scale-105 transition-transform">
+            <img src="../Design/logo.png" onerror="this.src='logo.png'" alt="CowColap Logo" class="h-12 w-auto object-contain rounded-full shadow-sm border border-black/10 hover:scale-105 transition-transform">
         </a>
     </header>
 
@@ -126,7 +126,7 @@
     <!-- Chân trang (Footer) -->
     <footer class="w-full border-t border-white/40 bg-white/30 backdrop-blur-md py-5 px-6 md:px-10 flex flex-col md:flex-row justify-between items-center gap-4 text-[13px] font-bold text-black relative z-10">
         <div class="flex items-center gap-3">
-            <img src="logo.png" alt="CowColap Logo" class="h-6 w-auto object-contain rounded-full">
+            <img src="../Design/logo.png" onerror="this.src='logo.png'" alt="CowColap Logo" class="h-6 w-auto object-contain rounded-full">
             <span>© 2026 CowColap. Tất cả quyền được bảo lưu.</span>
         </div>
         
@@ -152,20 +152,17 @@
                 const email = document.getElementById('email').value.trim();
                 const password = document.getElementById('password').value;
 
-                // 1. Kiểm tra Email đúng định dạng
                 if (!validateEmailFormat(email)) {
                     showToast("Invalid Email", "error");
                     return;
                 }
 
-                // 2. Kiểm tra quy tắc mật khẩu
                 const passCheck = validatePasswordRules(password);
                 if (!passCheck.valid) {
                     showToast(passCheck.message, "error");
                     return;
                 }
 
-                // Call Login API
                 try {
                     submitBtn.disabled = true;
                     submitBtn.innerHTML = `<span>Đang đăng nhập...</span>`;

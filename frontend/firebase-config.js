@@ -1,5 +1,5 @@
-// Configuration for Firebase
-// Replace with your project's Firebase configuration key
+// Configuration for Firebase & Unified API Service
+
 const firebaseConfig = {
     apiKey: "AIzaSyDemoKey_ReplaceWithYourActualFirebaseApiKey",
     authDomain: "cowcolap-app.firebaseapp.com",
@@ -63,37 +63,51 @@ class LocalDatabase {
     }
 }
 
-// Unified Auth & DB Service supporting both Firebase and Persisted Storage
+// Unified Auth & DB Service supporting Backend API, Firebase, and Local Persistence
 const UserService = {
     // 1. REGISTER
     async register(email, password) {
         const cleanEmail = email.trim().toLowerCase();
 
-        // Check if email already exists locally or in Firebase
+        // Optional Express Backend call if available
+        try {
+            const resp = await fetch('http://localhost:5000/api/register', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email: cleanEmail, password: password })
+            });
+            if (resp.ok) {
+                const data = await resp.json();
+                LocalDatabase.saveUser(cleanEmail, data.user);
+                return data.user;
+            } else {
+                const errData = await resp.json();
+                if (errData.error === 'Email already exists') {
+                    throw new Error("Email already exists");
+                }
+            }
+        } catch (backendErr) {
+            if (backendErr.message === "Email already exists") throw backendErr;
+        }
+
+        // Firebase & Fallback Database Logic
         if (LocalDatabase.getUser(cleanEmail)) {
             throw new Error("Email already exists");
         }
 
         let uid = 'user_' + Date.now();
 
-        // Try Firebase Registration if configured
         if (isFirebaseInitialized && firebaseConfig.apiKey !== "AIzaSyDemoKey_ReplaceWithYourActualFirebaseApiKey") {
             try {
                 const userCredential = await auth.createUserWithEmailAndPassword(cleanEmail, password);
                 uid = userCredential.user.uid;
             } catch (err) {
-                if (err.code === 'auth/email-already-in-use') {
-                    throw new Error("Email already exists");
-                } else if (err.code === 'auth/invalid-email') {
-                    throw new Error("Invalid Email");
-                } else if (err.code === 'auth/weak-password') {
-                    throw new Error("Password is too weak");
-                }
-                console.warn("Firebase Auth notice:", err.message);
+                if (err.code === 'auth/email-already-in-use') throw new Error("Email already exists");
+                if (err.code === 'auth/invalid-email') throw new Error("Invalid Email");
+                if (err.code === 'auth/weak-password') throw new Error("Password is too weak");
             }
         }
 
-        // Default User Profile
         const namePart = cleanEmail.split('@')[0];
         const defaultProfile = {
             uid: uid,
@@ -107,7 +121,6 @@ const UserService = {
             createdAt: new Date().toISOString()
         };
 
-        // Write to Firebase Firestore if configured
         if (isFirebaseInitialized && firebaseConfig.apiKey !== "AIzaSyDemoKey_ReplaceWithYourActualFirebaseApiKey") {
             try {
                 await db.collection('users').doc(uid).set({
@@ -124,7 +137,6 @@ const UserService = {
             }
         }
 
-        // Save locally for persistence
         LocalDatabase.saveUser(cleanEmail, defaultProfile);
         return defaultProfile;
     },
@@ -133,19 +145,29 @@ const UserService = {
     async login(email, password) {
         const cleanEmail = email.trim().toLowerCase();
 
+        try {
+            const resp = await fetch('http://localhost:5000/api/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email: cleanEmail, password: password })
+            });
+            if (resp.ok) {
+                const data = await resp.json();
+                LocalDatabase.setCurrentUser(data.user);
+                return data.user;
+            }
+        } catch (backendErr) {
+            console.warn("Express backend offline, falling back to Firebase/Local:", backendErr);
+        }
+
         if (isFirebaseInitialized && firebaseConfig.apiKey !== "AIzaSyDemoKey_ReplaceWithYourActualFirebaseApiKey") {
             try {
                 const userCredential = await auth.signInWithEmailAndPassword(cleanEmail, password);
                 const uid = userCredential.user.uid;
-                
-                // Fetch from Firestore
                 const doc = await db.collection('users').doc(uid).get();
                 let profile = doc.exists ? doc.data() : null;
 
-                if (!profile) {
-                    profile = LocalDatabase.getUser(cleanEmail);
-                }
-
+                if (!profile) profile = LocalDatabase.getUser(cleanEmail);
                 if (!profile) {
                     profile = {
                         uid: uid,
@@ -161,24 +183,14 @@ const UserService = {
                 LocalDatabase.setCurrentUser(profile);
                 return profile;
             } catch (err) {
-                console.warn("Firebase Login fallback:", err.message);
-                if (err.code === 'auth/user-not-found') {
-                    throw new Error("Invalid Email");
-                } else if (err.code === 'auth/wrong-password') {
-                    throw new Error("Incorrect password");
-                }
+                if (err.code === 'auth/user-not-found') throw new Error("Invalid Email");
+                if (err.code === 'auth/wrong-password') throw new Error("Incorrect password");
             }
         }
 
-        // Local Database Validation
         const user = LocalDatabase.getUser(cleanEmail);
-        if (!user) {
-            throw new Error("Email does not exist");
-        }
-
-        if (user.password !== password) {
-            throw new Error("Incorrect password");
-        }
+        if (!user) throw new Error("Email does not exist");
+        if (user.password !== password) throw new Error("Incorrect password");
 
         LocalDatabase.setCurrentUser(user);
         return user;
@@ -187,18 +199,28 @@ const UserService = {
     // 3. UPDATE PROFILE
     async updateProfile(email, updatedFields) {
         const cleanEmail = email.trim().toLowerCase();
-        const existingUser = LocalDatabase.getUser(cleanEmail) || LocalDatabase.getCurrentUser();
 
-        if (!existingUser) {
-            throw new Error("User session not found");
+        try {
+            const resp = await fetch('http://localhost:5000/api/profile/update', {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email: cleanEmail, ...updatedFields })
+            });
+            if (resp.ok) {
+                const data = await resp.json();
+                LocalDatabase.saveUser(cleanEmail, data.user);
+                LocalDatabase.setCurrentUser(data.user);
+                return data.user;
+            }
+        } catch (backendErr) {
+            console.warn("Backend API update fallback:", backendErr);
         }
 
-        const newProfileData = {
-            ...existingUser,
-            ...updatedFields
-        };
+        const existingUser = LocalDatabase.getUser(cleanEmail) || LocalDatabase.getCurrentUser();
+        if (!existingUser) throw new Error("User session not found");
 
-        // Update on Firebase if initialized
+        const newProfileData = { ...existingUser, ...updatedFields };
+
         if (isFirebaseInitialized && firebaseConfig.apiKey !== "AIzaSyDemoKey_ReplaceWithYourActualFirebaseApiKey" && auth.currentUser) {
             try {
                 await db.collection('users').doc(auth.currentUser.uid).update({
@@ -213,7 +235,6 @@ const UserService = {
             }
         }
 
-        // Update Local Database & Current User Session
         LocalDatabase.saveUser(cleanEmail, newProfileData);
         LocalDatabase.setCurrentUser(newProfileData);
         return newProfileData;
