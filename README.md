@@ -54,7 +54,7 @@ BT_Buoi5/
 ├── app.js                     # Logic kiểm tra điều kiện, Canvas đàn bò & Toast UI
 ├── baico.jpg                  # Ảnh nền đồng cỏ
 ├── cow.png                    # Asset con bò động cho Canvas
-├── Gemini_Generated_Image...  # Logo CowColap
+├── logo.png                        # Logo CowColap
 ├── Trang_Dang_Ki/             # Thư mục trang Đăng ký chi tiết
 ├── Trang_Dang_Nhap/           # Thư mục trang Đăng nhập chi tiết
 ├── Profile/                   # Thư mục trang Profile chi tiết
