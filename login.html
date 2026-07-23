@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Đăng nhập - CowColap</title>
+    
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Google Icons: Material Symbols Outlined -->
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL,GRAD,opsz@300,0,0,24&display=block" rel="stylesheet" />
+
+    <!-- Tailwind CSS (CDN) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Cấu hình Tailwind -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            blue: '#000000',        
+                            blueHover: '#333333',   
+                            link: '#000000',        
+                            icon: '#000000',        
+                            bg: '#F8FAFC',          
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+    <script src="firebase-config.js"></script>
+    <script src="app.js"></script>
+</head>
+<body class="bg-[url('baico.jpg')] bg-cover bg-center bg-fixed min-h-screen flex flex-col font-sans text-gray-800 antialiased relative overflow-hidden">
+
+    <!-- KHUNG CANVAS LÀM NỀN ĐỘNG -->
+    <canvas id="cowCanvas" class="absolute inset-0 w-full h-full z-0 pointer-events-none"></canvas>
+
+    <!-- Logo ở góc trái trên cùng -->
+    <header class="absolute top-0 left-0 w-full p-6 md:p-10 z-20">
+        <a href="index.html">
+            <img src="Gemini_Generated_Image_lua62klua62klua6.png" alt="CowColap Logo" class="h-12 w-auto object-contain rounded-full shadow-sm border border-black/10 hover:scale-105 transition-transform">
+        </a>
+    </header>
+
+    <!-- Nội dung chính (Khung Đăng nhập) -->
+    <main class="flex-grow flex items-center justify-center p-4 z-10 relative">
+        
+        <!-- Form Container -->
+        <div class="bg-white/30 backdrop-blur-xl rounded-2xl shadow-2xl border border-white/50 w-full max-w-[440px] p-8 md:p-10 mt-16 md:mt-0">
+            
+            <!-- Tiêu đề -->
+            <div class="text-center mb-8">
+                <h1 class="text-3xl font-bold text-black mb-2">Chào mừng trở lại</h1>
+                <p class="text-[15px] text-gray-800 font-medium">Vui lòng đăng nhập để tiếp tục</p>
+            </div>
+
+            <form id="loginForm" class="space-y-5" novalidate>
+                <!-- Ô nhập Email -->
+                <div>
+                    <label class="block text-sm font-bold text-black mb-1.5" for="email">Email</label>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
+                            <span class="material-symbols-outlined text-black text-[22px]">mail</span>
+                        </div>
+                        <input class="w-full pl-11 pr-4 py-2.5 bg-white/70 border-2 border-black focus:border-black focus:ring-0 rounded-lg text-[15px] font-medium transition-colors outline-none placeholder:text-gray-500" id="email" type="email" placeholder="Nhập địa chỉ email" required>
+                    </div>
+                </div>
+
+                <!-- Ô nhập Mật khẩu -->
+                <div>
+                    <div class="flex items-center justify-between mb-1.5">
+                        <label class="block text-sm font-bold text-black" for="password">Mật khẩu</label>
+                        <a href="#" onclick="showToast('Vui lòng liên hệ quản trị viên để khôi phục mật khẩu', 'error'); return false;" class="text-[13px] font-bold text-black hover:underline underline-offset-2 transition-colors">Quên mật khẩu?</a>
+                    </div>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
+                            <span class="material-symbols-outlined text-black text-[22px]">lock</span>
+                        </div>
+                        <input class="w-full pl-11 pr-11 py-2.5 bg-white/70 border-2 border-black focus:border-black focus:ring-0 rounded-lg text-[15px] font-medium transition-colors outline-none placeholder:text-gray-500" id="password" type="password" placeholder="Nhập mật khẩu" required>
+                        <button type="button" class="absolute inset-y-0 right-0 pr-3.5 flex items-center text-black hover:scale-110 transition-transform">
+                            <span class="material-symbols-outlined text-[22px]">visibility</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Nút Đăng nhập -->
+                <div class="pt-4">
+                    <button id="submitBtn" type="submit" class="w-full bg-white text-black border-2 border-black font-extrabold text-[16px] py-3 px-4 rounded-lg flex items-center justify-center gap-2 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[0px_0px_0px_0px_rgba(0,0,0,1)] hover:translate-y-[4px] hover:translate-x-[4px] transition-all">
+                        <span>Đăng nhập</span>
+                        <span class="material-symbols-outlined text-[24px]">pets</span>
+                    </button>
+                </div>
+            </form>
+
+            <!-- Đường gạch chia chữ "Hoặc" -->
+            <div class="flex items-center my-7">
+                <div class="flex-grow border-t-2 border-black/20"></div>
+                <span class="flex-shrink-0 px-3 text-[13px] font-bold text-black/60">Hoặc</span>
+                <div class="flex-grow border-t-2 border-black/20"></div>
+            </div>
+
+            <!-- Liên kết Đăng ký -->
+            <div class="text-center text-[14px] font-medium text-black">
+                Chưa có tài khoản? 
+                <a href="register.html" class="font-bold text-black hover:underline underline-offset-2 transition-colors">Đăng ký ngay</a>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- Chân trang (Footer) -->
+    <footer class="w-full border-t border-white/40 bg-white/30 backdrop-blur-md py-5 px-6 md:px-10 flex flex-col md:flex-row justify-between items-center gap-4 text-[13px] font-bold text-black relative z-10">
+        <div class="flex items-center gap-3">
+            <img src="Gemini_Generated_Image_lua62klua62klua6.png" alt="CowColap Logo" class="h-6 w-auto object-contain rounded-full">
+            <span>© 2026 CowColap. Tất cả quyền được bảo lưu.</span>
+        </div>
+        
+        <div class="flex gap-6">
+            <a href="#" class="hover:underline underline-offset-2">Điều khoản</a>
+            <a href="#" class="hover:underline underline-offset-2">Bảo mật</a>
+            <a href="#" class="hover:underline underline-offset-2">Liên hệ</a>
+        </div>
+    </footer>
+
+    <!-- LOGIC XỬ LÝ ĐĂNG NHẬP -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            setupCowCanvas();
+            setupPasswordToggles();
+
+            const loginForm = document.getElementById('loginForm');
+            const submitBtn = document.getElementById('submitBtn');
+
+            loginForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+
+                const email = document.getElementById('email').value.trim();
+                const password = document.getElementById('password').value;
+
+                // 1. Kiểm tra Email đúng định dạng
+                if (!validateEmailFormat(email)) {
+                    showToast("Invalid Email", "error");
+                    return;
+                }
+
+                // 2. Kiểm tra quy tắc mật khẩu
+                const passCheck = validatePasswordRules(password);
+                if (!passCheck.valid) {
+                    showToast(passCheck.message, "error");
+                    return;
+                }
+
+                // Call Login API
+                try {
+                    submitBtn.disabled = true;
+                    submitBtn.innerHTML = `<span>Đang đăng nhập...</span>`;
+
+                    const user = await UserService.login(email, password);
+
+                    showToast("Login successful!", "success");
+
+                    setTimeout(() => {
+                        window.location.href = "profile.html";
+                    }, 1000);
+
+                } catch (error) {
+                    showToast(error.message || "Invalid Email or Password", "error");
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = `<span>Đăng nhập</span><span class="material-symbols-outlined text-[24px]">pets</span>`;
+                }
+            });
+        });
+    </script>
+</body>
+</html>

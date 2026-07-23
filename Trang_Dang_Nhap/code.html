@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Đăng nhập - CowColap</title>
+    
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Google Icons: Material Symbols Outlined -->
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL,GRAD,opsz@300,0,0,24&display=block" rel="stylesheet" />
+
+    <!-- Tailwind CSS (CDN) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Cấu hình Tailwind -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            blue: '#000000',        
+                            blueHover: '#333333',   
+                            link: '#000000',        
+                            icon: '#000000',        
+                            bg: '#F8FAFC',          
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-[url('baico.jpg')] bg-cover bg-center bg-fixed min-h-screen flex flex-col font-sans text-gray-800 antialiased relative overflow-hidden">
+
+    <!-- KHUNG CANVAS LÀM NỀN ĐỘNG -->
+    <canvas id="cowCanvas" class="absolute inset-0 w-full h-full z-0 pointer-events-none"></canvas>
+
+    <!-- Logo ở góc trái trên cùng -->
+    <header class="absolute top-0 left-0 w-full p-6 md:p-10 z-20">
+        <!-- Đã thêm rounded-full để bo tròn logo -->
+        <img src="Gemini_Generated_Image_lua62klua62klua6.png" alt="CowColap Logo" class="h-12 w-auto object-contain rounded-full shadow-sm border border-black/10">
+    </header>
+
+    <!-- Nội dung chính (Khung Đăng nhập) -->
+    <main class="flex-grow flex items-center justify-center p-4 z-10 relative">
+        
+        <!-- Form Container -->
+        <div class="bg-white/30 backdrop-blur-xl rounded-2xl shadow-2xl border border-white/50 w-full max-w-[440px] p-8 md:p-10 mt-16 md:mt-0">
+            
+            <!-- Tiêu đề -->
+            <div class="text-center mb-8">
+                <h1 class="text-3xl font-bold text-black mb-2">Chào mừng trở lại</h1>
+                <p class="text-[15px] text-gray-800 font-medium">Vui lòng đăng nhập để tiếp tục</p>
+            </div>
+
+            <form class="space-y-5">
+                <!-- Ô nhập Email -->
+                <div>
+                    <label class="block text-sm font-bold text-black mb-1.5" for="email">Email</label>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
+                            <span class="material-symbols-outlined text-black text-[22px]">mail</span>
+                        </div>
+                        <input class="w-full pl-11 pr-4 py-2.5 bg-white/70 border-2 border-black focus:border-black focus:ring-0 rounded-lg text-[15px] font-medium transition-colors outline-none placeholder:text-gray-500" id="email" type="email" placeholder="Nhập địa chỉ email" required>
+                    </div>
+                </div>
+
+                <!-- Ô nhập Mật khẩu -->
+                <div>
+                    <div class="flex items-center justify-between mb-1.5">
+                        <label class="block text-sm font-bold text-black" for="password">Mật khẩu</label>
+                        <a href="#" class="text-[13px] font-bold text-black hover:underline underline-offset-2 transition-colors">Quên mật khẩu?</a>
+                    </div>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
+                            <span class="material-symbols-outlined text-black text-[22px]">lock</span>
+                        </div>
+                        <input class="w-full pl-11 pr-11 py-2.5 bg-white/70 border-2 border-black focus:border-black focus:ring-0 rounded-lg text-[15px] font-medium transition-colors outline-none placeholder:text-gray-500" id="password" type="password" placeholder="Nhập mật khẩu" required>
+                        <button type="button" class="absolute inset-y-0 right-0 pr-3.5 flex items-center text-black hover:scale-110 transition-transform">
+                            <span class="material-symbols-outlined text-[22px]">visibility</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Nút Đăng nhập -->
+                <div class="pt-4">
+                    <button type="submit" class="w-full bg-white text-black border-2 border-black font-extrabold text-[16px] py-3 px-4 rounded-lg flex items-center justify-center gap-2 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[0px_0px_0px_0px_rgba(0,0,0,1)] hover:translate-y-[4px] hover:translate-x-[4px] transition-all">
+                        Đăng nhập
+                        <span class="material-symbols-outlined text-[24px]">pets</span>
+                    </button>
+                </div>
+            </form>
+
+            <!-- Đường gạch chia chữ "Hoặc" -->
+            <div class="flex items-center my-7">
+                <div class="flex-grow border-t-2 border-black/20"></div>
+                <span class="flex-shrink-0 px-3 text-[13px] font-bold text-black/60">Hoặc</span>
+                <div class="flex-grow border-t-2 border-black/20"></div>
+            </div>
+
+            <!-- Liên kết Đăng ký -->
+            <div class="text-center text-[14px] font-medium text-black">
+                Chưa có tài khoản? 
+                <a href="#" class="font-bold text-black hover:underline underline-offset-2 transition-colors">Đăng ký ngay</a>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- Chân trang (Footer) -->
+    <footer class="w-full border-t border-white/40 bg-white/30 backdrop-blur-md py-5 px-6 md:px-10 flex flex-col md:flex-row justify-between items-center gap-4 text-[13px] font-bold text-black relative z-10">
+        <!-- Bản quyền -->
+        <div class="flex items-center gap-3">
+            <!-- Đã thêm rounded-full để bo tròn logo -->
+            <img src="Gemini_Generated_Image_lua62klua62klua6.png" alt="CowColap Logo" class="h-6 w-auto object-contain rounded-full">
+            <span>© 2026 CowColap. Tất cả quyền được bảo lưu.</span>
+        </div>
+        
+        <!-- Menu Footer -->
+        <div class="flex gap-6">
+            <a href="#" class="hover:underline underline-offset-2">Điều khoản</a>
+            <a href="#" class="hover:underline underline-offset-2">Bảo mật</a>
+            <a href="#" class="hover:underline underline-offset-2">Liên hệ</a>
+        </div>
+    </footer>
+
+    <!-- JAVASCRIPT: HIỆU ỨNG ĐÀN BÒ -->
+    <script>
+        const canvas = document.getElementById('cowCanvas');
+        const ctx = canvas.getContext('2d');
+
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        const cowImg = new Image();
+        cowImg.src = 'cow.png'; 
+
+        let mouse = { x: null, y: null, radius: 180 };
+
+        window.addEventListener('mousemove', function(event) {
+            mouse.x = event.x;
+            mouse.y = event.y;
+        });
+
+        window.addEventListener('mouseout', function() {
+            mouse.x = undefined;
+            mouse.y = undefined;
+        });
+
+        window.addEventListener('resize', function() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            init();
+        });
+
+        class Cow {
+            constructor(x, y) {
+                this.x = x;
+                this.y = y;
+                this.size = 40; 
+                this.velocityX = (Math.random() - 0.5) * 1.5;
+                this.velocityY = (Math.random() - 0.5) * 1.5;
+                this.mass = 1.2;
+            }
+
+            draw() {
+                if(cowImg.complete) {
+                    ctx.drawImage(cowImg, this.x - this.size/2, this.y - this.size/2, this.size, this.size);
+                }
+            }
+
+            update() {
+                this.x += this.velocityX;
+                this.y += this.velocityY;
+
+                if (this.x > canvas.width || this.x < 0) this.velocityX *= -1;
+                if (this.y > canvas.height || this.y < 0) this.velocityY *= -1;
+
+                if (mouse.x !== undefined && mouse.y !== undefined) {
+                    let dx = mouse.x - this.x;
+                    let dy = mouse.y - this.y;
+                    let distance = Math.sqrt(dx * dx + dy * dy);
+
+                    if (distance < mouse.radius) {
+                        let forceDirectionX = dx / distance;
+                        let forceDirectionY = dy / distance;
+                        let force = (mouse.radius - distance) / mouse.radius;
+                        
+                        let directionX = forceDirectionX * force * this.mass;
+                        let directionY = forceDirectionY * force * this.mass;
+
+                        this.x -= directionX * 6; 
+                        this.y -= directionY * 6;
+                    }
+                }
+                this.draw();
+            }
+        }
+
+        let cowArray = [];
+
+        function init() {
+            cowArray = [];
+            let numberOfCows = 60; 
+            for (let i = 0; i < numberOfCows; i++) {
+                let x = Math.random() * canvas.width;
+                let y = Math.random() * canvas.height;
+                cowArray.push(new Cow(x, y));
+            }
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            for (let i = 0; i < cowArray.length; i++) {
+                cowArray[i].update();
+            }
+        }
+
+        cowImg.onload = () => {
+            init();
+            animate();
+        };
+    </script>
+</body>
+</html>

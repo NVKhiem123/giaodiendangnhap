@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8">
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <title>Thông tin cá nhân - CowColap</title>
+    
+    <!-- Material Symbols -->
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL,GRAD,opsz@300,0,0,24&display=block" rel="stylesheet" />
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script id="tailwind-config">
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        heading: ['Manrope', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            blue: '#000000',
+                            blueHover: '#333333',
+                            bg: '#F8FAFC',
+                            surface: '#FFFFFF',
+                            text: '#000000',
+                            textMuted: '#333333',
+                            border: '#000000',
+                            inputBg: 'rgba(255, 255, 255, 0.7)'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+    <script src="firebase-config.js"></script>
+    <script src="app.js"></script>
+</head>
+<body class="bg-[url('baico.jpg')] bg-cover bg-center bg-fixed min-h-screen flex flex-col font-sans text-black antialiased relative overflow-hidden">
+
+    <!-- KHUNG CANVAS LÀM NỀN ĐỘNG -->
+    <canvas id="cowCanvas" class="absolute inset-0 w-full h-full z-0 pointer-events-none"></canvas>
+
+    <!-- Header / Navbar -->
+    <header class="bg-white/30 backdrop-blur-md border-b border-white/40 sticky top-0 z-50 w-full shadow-sm">
+        <div class="flex justify-between items-center h-[72px] px-6 md:px-10 max-w-[1200px] mx-auto w-full">
+            
+            <!-- Logo -->
+            <div class="flex items-center">
+                <a href="index.html">
+                    <img src="Gemini_Generated_Image_lua62klua62klua6.png" alt="CowColap Logo" class="h-10 w-auto object-contain rounded-full shadow-sm border-2 border-black hover:scale-105 transition-transform">
+                </a>
+            </div>
+            
+            <!-- Desktop Nav -->
+            <nav class="hidden md:flex items-center gap-8 font-bold text-[15px]">
+                <a class="text-black hover:underline underline-offset-2 transition-colors cursor-pointer" href="index.html">Trang chủ</a>
+                <a class="text-black hover:underline underline-offset-2 transition-colors cursor-pointer" href="#">Dịch vụ</a>
+                <a class="text-black hover:underline underline-offset-2 transition-colors cursor-pointer" href="#">Hỗ trợ</a>
+            </nav>
+            
+            <!-- Trailing Action (Nút Đăng xuất blocky) -->
+            <div class="flex items-center">
+                <button id="logoutBtn" class="bg-white text-black border-2 border-black font-extrabold text-[14px] px-4 py-2 rounded-lg flex items-center gap-2 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-[0px_0px_0px_0px_rgba(0,0,0,1)] hover:translate-y-[2px] hover:translate-x-[2px] transition-all">
+                    <span class="material-symbols-outlined text-[18px]">logout</span>
+                    Đăng xuất
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Canvas -->
+    <main class="flex-grow w-full max-w-[840px] mx-auto px-4 py-8 md:py-12 flex flex-col gap-6 relative z-10">
+        
+        <!-- Block 1: Profile Header (Kính mờ) -->
+        <section class="bg-white/30 backdrop-blur-xl rounded-[20px] shadow-2xl border border-white/50 w-full p-8 flex flex-col sm:flex-row items-center sm:items-center text-center sm:text-left gap-6 relative overflow-hidden">
+            
+            <!-- Avatar -->
+            <div class="relative z-10">
+                <div class="p-1.5 bg-white/70 rounded-full shadow-sm border-2 border-black">
+                    <img id="userAvatar" class="w-24 h-24 rounded-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCGSR6RW9-93lsENABWDIRJrn10D2P073hmPo8xmUCqEUMrXty321dSkQ1BgZnxkgHNfYtdt6kfkCcWfTNo6qfD3vusyKtHzQ4V4vTrc-kq_uyVx1ZszCMiwid7mqBo6lkZ1-_4OtrhvvHMyiPmoZX15NhhpjtO6SPLpsHhLiQQZVNOkZo7Dnf3120FGk7N45pAvepN57EsbTaW6S0nVV6xG8n30hUfN5icxsQD1f8kslTELSAJTCJfC0tUU2CP22oZvzms1SpTqZfz" alt="Avatar">
+                </div>
+            </div>
+            
+            <!-- User Info Header -->
+            <div class="flex-grow flex flex-col justify-center z-10">
+                <h1 id="headerFullName" class="font-heading text-3xl font-extrabold text-black">Nguyễn Văn A</h1>
+                <p id="headerEmail" class="text-[15px] font-bold text-black/70 mt-1">nguyen.vana@example.com</p>
+                
+                <div class="mt-3 flex items-center justify-center sm:justify-start">
+                    <span class="inline-flex items-center gap-1.5 bg-white/80 px-3 py-1.5 rounded-full border-2 border-black">
+                        <span class="w-2.5 h-2.5 rounded-full bg-[#10B981] border border-black"></span>
+                        <span class="text-[12px] font-extrabold text-black">Đã xác minh</span>
+                    </span>
+                </div>
+            </div>
+            
+            <!-- Edit Button Action Area -->
+            <div class="mt-4 sm:mt-0 z-10 flex items-center gap-2" id="actionArea">
+                <button id="editBtn" class="bg-white text-black border-2 border-black font-extrabold text-[14px] px-5 py-2.5 rounded-lg flex items-center gap-2 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[0px_0px_0px_0px_rgba(0,0,0,1)] hover:translate-y-[4px] hover:translate-x-[4px] transition-all">
+                    <span id="editBtnIcon" class="material-symbols-outlined text-[18px]">edit</span>
+                    <span id="editBtnText">Chỉnh sửa</span>
+                </button>
+            </div>
+        </section>
+
+        <!-- Block 2: Personal Information Form (Kính mờ) -->
+        <section class="bg-white/30 backdrop-blur-xl rounded-[20px] shadow-2xl border border-white/50 w-full p-8 flex flex-col relative z-10">
+            
+            <!-- Title -->
+            <div class="mb-5">
+                <h2 class="font-heading text-[22px] font-extrabold text-black">Thông tin cá nhân</h2>
+            </div>
+            
+            <!-- Divider -->
+            <hr class="border-t-2 border-black/20 mb-7">
+
+            <form id="profileForm" class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
+                
+                <!-- Field: Họ và tên đệm -->
+                <div class="flex flex-col gap-2">
+                    <label class="font-bold text-[14px] text-black" for="firstName">Họ và tên đệm</label>
+                    <input class="w-full bg-white/70 border-2 border-black rounded-lg px-4 py-2.5 text-[15px] font-medium text-black focus:border-black focus:ring-0 outline-none transition-all" id="firstName" readonly type="text" value="Nguyễn Văn">
+                </div>
+                
+                <!-- Field: Tên -->
+                <div class="flex flex-col gap-2">
+                    <label class="font-bold text-[14px] text-black" for="lastName">Tên</label>
+                    <input class="w-full bg-white/70 border-2 border-black rounded-lg px-4 py-2.5 text-[15px] font-medium text-black focus:border-black focus:ring-0 outline-none transition-all" id="lastName" readonly type="text" value="A">
+                </div>
+                
+                <!-- Field: Email -->
+                <div class="flex flex-col gap-2">
+                    <label class="font-bold text-[14px] text-black" for="email">Email</label>
+                    <div class="relative">
+                        <span class="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-black text-[20px] pointer-events-none">mail</span>
+                        <input class="w-full bg-white/70 border-2 border-black rounded-lg pl-[40px] pr-4 py-2.5 text-[15px] font-medium text-black focus:border-black focus:ring-0 outline-none transition-all opacity-80 cursor-not-allowed" id="email" readonly type="email" value="nguyen.vana@example.com">
+                    </div>
+                </div>
+                
+                <!-- Field: Số điện thoại -->
+                <div class="flex flex-col gap-2">
+                    <label class="font-bold text-[14px] text-black" for="phone">Số điện thoại</label>
+                    <div class="relative">
+                        <span class="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-black text-[20px] pointer-events-none">call</span>
+                        <input class="w-full bg-white/70 border-2 border-black rounded-lg pl-[40px] pr-4 py-2.5 text-[15px] font-medium text-black focus:border-black focus:ring-0 outline-none transition-all" id="phone" readonly type="tel" value="+84 90 123 4567">
+                    </div>
+                </div>
+                
+                <!-- Field: Địa chỉ -->
+                <div class="flex flex-col gap-2 md:col-span-2">
+                    <label class="font-bold text-[14px] text-black" for="address">Địa chỉ</label>
+                    <div class="relative">
+                        <span class="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-black text-[20px] pointer-events-none">location_on</span>
+                        <input class="w-full bg-white/70 border-2 border-black rounded-lg pl-[40px] pr-4 py-2.5 text-[15px] font-medium text-black focus:border-black focus:ring-0 outline-none transition-all" id="address" readonly type="text" value="Tòa nhà CowColap, Cơ sở 1 PTIT, TP. Hồ Chí Minh">
+                    </div>
+                </div>
+
+            </form>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-white/30 backdrop-blur-md border-t border-white/40 mt-auto relative z-10">
+        <div class="flex flex-col md:flex-row justify-between items-center py-6 px-6 md:px-10 max-w-[1200px] mx-auto w-full gap-4">
+            <div class="flex items-center gap-3">
+                <img src="Gemini_Generated_Image_lua62klua62klua6.png" alt="CowColap Logo" class="h-7 w-auto object-contain rounded-full border border-black/20">
+                <span class="text-[13px] font-bold text-black">© 2026 CowColap. Tất cả quyền được bảo lưu.</span>
+            </div>
+            <div class="flex gap-6 font-bold text-[13px]">
+                <a class="text-black hover:underline underline-offset-2 transition-colors" href="#">Privacy Policy</a>
+                <a class="text-black hover:underline underline-offset-2 transition-colors" href="#">Terms of Service</a>
+                <a class="text-black hover:underline underline-offset-2 transition-colors" href="#">Contact Us</a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- LOGIC XỬ LÝ PROFILE & FIREBASE SYNC -->
+    <script>
+        let isEditMode = false;
+        let currentUserData = null;
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            setupCowCanvas();
+
+            // Load logged in user or redirect
+            currentUserData = UserService.getCurrentUser();
+
+            if (!currentUserData) {
+                // If not logged in, populate sample user for direct profile view or offer login
+                currentUserData = {
+                    email: "nguyen.vana@example.com",
+                    firstName: "Nguyễn Văn",
+                    lastName: "A",
+                    phone: "+84 90 123 4567",
+                    address: "Tòa nhà CowColap, Cơ sở 1 PTIT, TP. Hồ Chí Minh",
+                    isVerified: true
+                };
+            }
+
+            // Populate initial values into DOM
+            populateProfileFields(currentUserData);
+
+            // Setup Edit Button Toggle
+            const editBtn = document.getElementById('editBtn');
+            const editBtnText = document.getElementById('editBtnText');
+            const editBtnIcon = document.getElementById('editBtnIcon');
+            const actionArea = document.getElementById('actionArea');
+
+            const firstNameInput = document.getElementById('firstName');
+            const lastNameInput = document.getElementById('lastName');
+            const phoneInput = document.getElementById('phone');
+            const addressInput = document.getElementById('address');
+
+            const editableInputs = [firstNameInput, lastNameInput, phoneInput, addressInput];
+
+            editBtn.addEventListener('click', async () => {
+                if (!isEditMode) {
+                    // Switch to EDIT MODE
+                    isEditMode = true;
+                    editBtnText.textContent = "Lưu thay đổi";
+                    editBtnIcon.textContent = "save";
+                    editBtn.classList.remove('bg-white');
+                    editBtn.classList.add('bg-black', 'text-white');
+
+                    editableInputs.forEach(input => {
+                        input.removeAttribute('readonly');
+                        input.classList.add('bg-white', 'ring-2', 'ring-black');
+                    });
+                    firstNameInput.focus();
+
+                    // Add Cancel Button
+                    if (!document.getElementById('cancelBtn')) {
+                        const cancelBtn = document.createElement('button');
+                        cancelBtn.id = 'cancelBtn';
+                        cancelBtn.className = "bg-white text-black border-2 border-black font-extrabold text-[14px] px-4 py-2.5 rounded-lg flex items-center gap-1 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-[0px_0px_0px_0px_rgba(0,0,0,1)] hover:translate-y-[2px] transition-all";
+                        cancelBtn.innerHTML = `<span class="material-symbols-outlined text-[18px]">close</span> Hủy`;
+                        
+                        cancelBtn.addEventListener('click', () => {
+                            populateProfileFields(currentUserData);
+                            exitEditMode();
+                        });
+
+                        actionArea.appendChild(cancelBtn);
+                    }
+
+                } else {
+                    // SAVE CHANGES TO FIREBASE / DATABASE
+                    const updatedFields = {
+                        firstName: firstNameInput.value.trim(),
+                        lastName: lastNameInput.value.trim(),
+                        phone: phoneInput.value.trim(),
+                        address: addressInput.value.trim()
+                    };
+
+                    if (!updatedFields.firstName || !updatedFields.lastName) {
+                        showToast("Họ và Tên không được để trống", "error");
+                        return;
+                    }
+
+                    try {
+                        editBtn.disabled = true;
+                        editBtnText.textContent = "Đang lưu...";
+
+                        // Update in Firebase & Persistent DB
+                        currentUserData = await UserService.updateProfile(currentUserData.email, updatedFields);
+                        
+                        // Update Header Text
+                        document.getElementById('headerFullName').textContent = `${currentUserData.firstName} ${currentUserData.lastName}`;
+
+                        showToast("Cập nhật thông tin thành công!", "success");
+                        exitEditMode();
+
+                    } catch (err) {
+                        showToast(err.message || "Cập nhật thất bại", "error");
+                    } finally {
+                        editBtn.disabled = false;
+                    }
+                }
+            });
+
+            function exitEditMode() {
+                isEditMode = false;
+                editBtnText.textContent = "Chỉnh sửa";
+                editBtnIcon.textContent = "edit";
+                editBtn.classList.remove('bg-black', 'text-white');
+                editBtn.classList.add('bg-white', 'text-black');
+
+                editableInputs.forEach(input => {
+                    input.setAttribute('readonly', 'readonly');
+                    input.classList.remove('ring-2', 'ring-black');
+                    input.classList.add('bg-white/70');
+                });
+
+                const cancelBtn = document.getElementById('cancelBtn');
+                if (cancelBtn) cancelBtn.remove();
+            }
+
+            // Setup Logout Button
+            const logoutBtn = document.getElementById('logoutBtn');
+            logoutBtn.addEventListener('click', async () => {
+                await UserService.logout();
+                showToast("Đã đăng xuất", "success");
+                setTimeout(() => {
+                    window.location.href = "login.html";
+                }, 800);
+            });
+        });
+
+        function populateProfileFields(data) {
+            document.getElementById('headerFullName').textContent = `${data.firstName || ''} ${data.lastName || ''}`.trim() || 'Nguyễn Văn A';
+            document.getElementById('headerEmail').textContent = data.email || 'nguyen.vana@example.com';
+            
+            document.getElementById('firstName').value = data.firstName || '';
+            document.getElementById('lastName').value = data.lastName || '';
+            document.getElementById('email').value = data.email || '';
+            document.getElementById('phone').value = data.phone || '';
+            document.getElementById('address').value = data.address || '';
+        }
+    </script>
+</body>
+</html>
